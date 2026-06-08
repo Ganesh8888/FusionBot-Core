@@ -1,0 +1,10 @@
+# Linter and Formatting Tools
+black==23.12.1
+flake8==6.1.0
+isort==5.13.2
+
+# Pre-commit Framework
+pre-commit==3.5.0
+
+# Testing
+pytest==7.4.3
