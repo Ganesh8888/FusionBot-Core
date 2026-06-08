@@ -1,0 +1,22 @@
+# ROS 2 Workspace Build Directories
+build/
+install/
+log/
+
+# Python Virtual Environments
+venv/
+.env/
+
+# Editor/IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+.docker/
+
+# Ignore all other packages in the src folder
+src/*
+# ...BUT explicitly track fusion_bot
+!src/fusion_bot/

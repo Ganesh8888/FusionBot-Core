@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="fusion_bot">
+    <!-- Referring to the inertial macros -->
+    <xacro:include filename="inertial_macros.xacro" />
+    <!-- Referring to the ros2_control macros -->
+    <xacro:include filename="ros2_control.xacro" />
+
+    <!-- The "shadow" on the floor to lift up the base_link -->
+    <link name="base_footprint"></link>
+
+    <!-- BASE LINK: The absolute center point of the robot -->
+    <link name="base_link">
+    </link>
+
+    <joint name="base_footprint_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <!-- Lift the base_link up by the radius of the wheels (0.05m) -->
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    </joint>
+
+    <!-- CHASSIS LINK: The physical body of the robot -->
+    <link name="chassis">
+        <visual>
+            <origin xyz="0 0 0.16"/>
+            <geometry>
+                <!-- A box that is 0.4m long, 0.3m wide, and 0.2m tall -->
+                <box size="0.4 0.3 0.2"/>
+            </geometry>
+            <material name="white">
+                <color rgba="1 1 1 1"/>
+            </material>
+        </visual>
+        <!-- The Hit-Box -->
+        <collision>
+            <origin xyz="0 0 0.16"/>
+            <geometry>
+                <box size="0.4 0.3 0.2"/>
+            </geometry>
+        </collision>
+        <!-- The Mass and Math (Weighs 5kg) -->
+        <xacro:inertial_box mass="5.0" x="0.4" y="0.3" z="0.2">
+            <origin xyz="0 0 0.16"/>
+        </xacro:inertial_box>
+        
+        <!-- We will add collision and inertia tags later! -->
+    </link>
+
+    <!-- CHASSIS JOINT: Attaching the chassis to the base_link -->
+    <joint name="chassis_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="chassis"/>
+        <!-- We shift the chassis slightly backward from the center so the drive wheels sit at the front -->
+        <origin xyz=" 0 0 0"/>
+    </joint>
+
+    <!-- XACRO MACRO FOR DRIVE WHEELS -->
+    <xacro:macro name="wheel" params="prefix x_offset y_offset">
+        <link name="${prefix}_wheel">
+            <visual>
+                <geometry>
+                    <!-- A wheel with a 5cm radius and 4cm width -->
+                    <cylinder radius="0.05" length="0.04"/>
+                </geometry>
+                <material name="red">
+                    <color rgba="1 0 0 1"/>
+                </material>
+            </visual>
+
+            <!-- The Hit-Box -->
+            <collision>
+                <geometry>
+                    <cylinder radius="0.05" length="0.04"/>
+                </geometry>
+            </collision>
+            <!-- The Mass and Math (Each wheel weighs 0.5kg) -->
+            <xacro:inertial_cylinder mass="0.5" length="0.04" radius="0.05">
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+            </xacro:inertial_cylinder>
+        </link>
+
+        <!-- continuous joint for the wheels -->
+        <joint name="${prefix}_wheel_joint" type="continuous">
+            <parent link="base_link"/>
+            <child link="${prefix}_wheel"/>
+            <!-- rpy rotates the cylinder so it lays flat on its side -->
+            <origin xyz="${x_offset} ${y_offset} 0" rpy="-1.5708 0 0"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="10000" velocity="1000"/>
+            <dynamics damping="0.2" friction="0.2"/>
+        </joint>
+    </xacro:macro>
+
+    <!-- CALL THE MACRO TO SPAWN THE WHEELS -->
+    <xacro:wheel prefix="front_left" x_offset="0.1" y_offset="0.175"/>
+    <xacro:wheel prefix="front_right" x_offset="0.1" y_offset="-0.175"/>
+    <xacro:wheel prefix="rear_left" x_offset="-0.1" y_offset="0.175"/>
+    <xacro:wheel prefix="rear_right" x_offset="-0.1" y_offset="-0.175"/>
+
+    <!-- ============================================== -->
+    <!-- AESTHETIC UPGRADES & SENSOR MOUNTS             -->
+    <!-- ============================================== -->
+
+    <!-- TOP DECK -->
+    <link name="top_deck">
+        <visual>
+            <geometry>
+                <box size="0.3 0.2 0.02"/>
+            </geometry>
+            <material name="dark_grey">
+                <color rgba="0.2 0.2 0.2 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.3 0.2 0.02"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="1.0" x="0.3" y="0.2" z="0.02">
+            <origin xyz="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="top_deck_joint" type="fixed">
+        <parent link="chassis"/>
+        <child link="top_deck"/>
+        <origin xyz="0 0 0.27" rpy="0 0 0"/> <!-- 0.16 (center) + 0.1 (half chassis) + 0.01 (half deck) -->
+    </joint>
+
+    <!-- SENSOR MAST -->
+    <link name="sensor_mast">
+        <visual>
+            <geometry>
+                <cylinder radius="0.02" length="0.2"/>
+            </geometry>
+            <material name="silver">
+                <color rgba="0.75 0.75 0.75 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.02" length="0.2"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="0.2" radius="0.02" length="0.2">
+            <origin xyz="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="sensor_mast_joint" type="fixed">
+        <parent link="top_deck"/>
+        <child link="sensor_mast"/>
+        <origin xyz="0.1 0 0.11" rpy="0 0 0"/> <!-- Mounted near the front of the deck -->
+    </joint>
+
+    <!-- ============================================== -->
+    <!-- SENSORS (PHYSICAL LINKS)                       -->
+    <!-- ============================================== -->
+
+    <!-- IMU -->
+    <link name="imu_link">
+        <xacro:inertial_box mass="0.01" x="0.01" y="0.01" z="0.01">
+            <origin xyz="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+    <joint name="imu_joint" type="fixed">
+        <parent link="chassis"/>
+        <child link="imu_link"/>
+        <origin xyz="0 0 0.16" rpy="0 0 0"/> <!-- Dead center of gravity -->
+    </joint>
+
+    <!-- DEPTH CAMERA -->
+    <link name="camera_link">
+        <visual>
+            <geometry>
+                <box size="0.02 0.1 0.03"/>
+            </geometry>
+            <material name="black">
+                <color rgba="0 0 0 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.02 0.1 0.03"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="0.1" x="0.02" y="0.1" z="0.03">
+            <origin xyz="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+    <joint name="camera_joint" type="fixed">
+        <parent link="sensor_mast"/>
+        <child link="camera_link"/>
+        <origin xyz="0.02 0 0.05" rpy="0 0 0"/> <!-- Front face of the mast -->
+    </joint>
+
+    <!-- LiDAR -->
+    <link name="lidar_link">
+        <visual>
+            <geometry>
+                <cylinder radius="0.035" length="0.04"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.035" length="0.04"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="0.15" radius="0.035" length="0.04">
+            <origin xyz="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+    <joint name="lidar_joint" type="fixed">
+        <parent link="sensor_mast"/>
+        <child link="lidar_link"/>
+        <origin xyz="0 0 0.12" rpy="0 0 0"/> <!-- Top of the mast -->
+    </joint>
+
+    <!-- ============================================== -->
+    <!-- GAZEBO PLUGINS (DIGITAL HARDWARE)              -->
+    <!-- ============================================== -->
+
+    <gazebo reference="imu_link">
+        <sensor name="imu_sensor" type="imu">
+            <always_on>1</always_on>
+            <update_rate>100</update_rate>
+            <visualize>true</visualize>
+            <topic>imu</topic>
+        </sensor>
+    </gazebo>
+
+    <gazebo reference="camera_link">
+        <sensor name="depth_camera" type="rgbd_camera">
+            <always_on>1</always_on>
+            <update_rate>30</update_rate>
+            <topic>camera</topic>
+            <camera>
+                <horizontal_fov>1.047</horizontal_fov>
+                <image>
+                    <width>640</width>
+                    <height>480</height>
+                </image>
+                <clip>
+                    <near>0.1</near>
+                    <far>10.0</far>
+                </clip>
+            </camera>
+        </sensor>
+    </gazebo>
+
+    <gazebo reference="lidar_link">
+        <sensor name="lidar" type="gpu_lidar">
+            <always_on>1</always_on>
+            <update_rate>10</update_rate>
+            <visualize>true</visualize>
+            <topic>scan</topic>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1.0</resolution>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>0.15</min>
+                    <max>12.0</max>
+                    <resolution>0.015</resolution>
+                </range>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.01</stddev>
+                </noise>
+            </ray>
+        </sensor>
+    </gazebo>
+
+</robot>

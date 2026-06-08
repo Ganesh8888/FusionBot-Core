@@ -1,0 +1,21 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 30 # How fast the control loop runs (Hz)
+
+    # 1. The Broadcaster: This node reads Gazebo physics and publishes /joint_states so RViz is happy!
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    # 2. The Skid-Steer Controller: This converts joystick /cmd_vel into 4-wheel rotation math
+    skid_steer_controller:
+      type: diff_drive_controller/DiffDriveController
+
+skid_steer_controller:
+  ros__parameters:
+    left_wheel_names: ["front_left_wheel_joint", "rear_left_wheel_joint"]
+    right_wheel_names: ["front_right_wheel_joint", "rear_right_wheel_joint"]
+    wheel_separation: 0.35
+    wheel_radius: 0.05
+    use_stamped_vel: false
+    base_frame_id: base_footprint
+    open_loop: true   

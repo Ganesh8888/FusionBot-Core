@@ -1,0 +1,18 @@
+services:
+  robot_dev:
+    build: .
+    container_name: fusion_bot_env
+    # network_mode: host allows the container to use your laptop's network.
+    # This is essential for ROS 2 DDS (node communication) and Foxglove.
+    network_mode: "host"
+    # Privileged and DISPLAY are required to run GUI apps like Gazebo/RViz
+    privileged: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Mount our local workspace into the container's /workspace folder
+      - .:/workspace
+    # Keep the container running in the background
+    command: tail -f /dev/null
