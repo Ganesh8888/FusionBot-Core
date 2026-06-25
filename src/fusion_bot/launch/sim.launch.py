@@ -101,17 +101,17 @@ def generate_launch_description():
         parameters=[{"use_sim_time": True}],
     )
 
-    visual_odom = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [
-                os.path.join(
-                    get_package_share_directory(pkg_name),
-                    "launch",
-                    "visual_odom.launch.py",
-                )
-            ]
-        ),
-    )
+    # visual_odom = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [
+    #             os.path.join(
+    #                 get_package_share_directory(pkg_name),
+    #                 "launch",
+    #                 "visual_odom.launch.py",
+    #             )
+    #         ]
+    #     ),
+    # )
 
     fault_injector = Node(
         package="fusion_bot",
@@ -129,17 +129,17 @@ def generate_launch_description():
         parameters=[{"use_sim_time": True}],
     )
 
-    ekf_config_path = os.path.join(
-        get_package_share_directory(pkg_name), "config", "ekf.yaml"
-    )
+    # ekf_config_path = os.path.join(
+    #     get_package_share_directory(pkg_name), "config", "ekf.yaml"
+    # )
 
-    ekf = Node(
-        package="robot_localization",
-        executable="ekf_node",
-        name="ekf_filter_node",
-        output="screen",
-        parameters=[ekf_config_path, {"use_sim_time": True}],
-    )
+    # ekf = Node(
+    #     package="robot_localization",
+    #     executable="ekf_node",
+    #     name="ekf_filter_node",
+    #     output="screen",
+    #     parameters=[ekf_config_path, {"use_sim_time": True}],
+    # )
 
     slam = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

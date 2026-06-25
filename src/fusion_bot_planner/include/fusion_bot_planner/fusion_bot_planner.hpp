@@ -23,12 +23,13 @@ struct AStarNode
   unsigned int x, y; // Grid coordinates on the map
   float g_cost;      // Distance traveled from the start
   float f_cost;      // g_cost + estimated distance to the goal
-  
+
   // A pointer to remember which pixel we came from (so we can draw the path backwards at the end)
   std::shared_ptr<AStarNode> parent;
 
   // We want the node with the LOWEST f_cost to be explored first.
-  bool operator>(const AStarNode& other) const {
+  bool operator>(const AStarNode & other) const
+  {
     return f_cost > other.f_cost;
   }
 };
@@ -64,7 +65,7 @@ public:
 private:
   // We store these internally to use them in the createPlan function later
   nav2_costmap_2d::Costmap2D * costmap_;
-  
+
   std::shared_ptr<tf2_ros::Buffer> tf_;
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Logger logger_{rclcpp::get_logger("FusionBotPlanner")};
