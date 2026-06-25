@@ -27,8 +27,8 @@
       <div class="hero-copy">
         <p class="eyebrow">Project Showcase</p>
         <h2>A Robust Foundation for Robotics</h2>
-        <p>This page presents the <strong>FusionBot-Core</strong> platform. Built from the ground up, this project serves as a foundational "Backbone Bot" for future robotics research. It tackles the hardest challenges in modern robotics: time synchronization, skid-steer odometry drift, and cloud-native simulation.</p>
-        <p>By engineering a modular pipeline that perfectly fuses Wheel Odometry, IMU data, and Visual Odometry, the robot maintains fault-tolerant localization even when sensors fail or wheels slip on industrial floors.</p>
+        <p>This page presents the <strong>FusionBot-Core</strong> platform. Originally engineered as a fault-tolerant "Backbone Bot" to solve skid-steer odometry drift, the architecture has been extended to support complex autonomous navigation. It fuses Wheel Odometry, IMU data, and Visual Odometry to maintain robust localization in chaotic environments.</p>
+        <p>Built upon this stable sensor-fusion foundation, a custom grid-based A* pathfinding algorithm was integrated as a ROS 2 Nav2 plugin, enabling the robot to dynamically compute optimal global paths while safely avoiding obstacles.</p>
         <div class="hero-actions">
           <a class="button primary" href="https://github.com/Ganesh8888/FusionBot-Core" target="_blank" rel="noopener">View Repository</a>
           <a class="button secondary" href="#results">View Benchmarks</a>
@@ -42,6 +42,10 @@
         <div class="stat-card">
           <span class="stat-label">Sensor Fusion</span>
           <strong>robot_localization (EKF)</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Navigation Stack</span>
+          <strong>Nav2 (Custom A* Plugin)</strong>
         </div>
         <div class="stat-card">
           <span class="stat-label">Cloud Deployment</span>
@@ -70,17 +74,21 @@
     </section>
 
     <section id="architecture" class="section">
-      <h2>Architecture & Sensor Fusion</h2>
-      <p>The system runs entirely within the ROS 2 framework, bridging data from the Gazebo Harmonic physics engine via custom C++ nodes to ensure perfect timestamp synchronization (`use_sim_time: True`).</p>
+      <h2>Architecture & Navigation</h2>
+      <p>The system runs entirely within the ROS 2 framework, bridging data from the Gazebo Harmonic physics engine via custom C++ nodes to ensure precise timestamp synchronization (`use_sim_time: True`).</p>
       
       <div class="info-grid">
         <article class="info-card">
-          <h3>SLAM Toolbox</h3>
-          <p>Running as an asynchronous lifecycle node, it processes the fused `odometry/filtered` data and 2D LiDAR scans to map complex geometric environments.</p>
+          <h3>Extended Kalman Filter</h3>
+          <p>The `robot_localization` package processes wheel encoders and IMU data. Covariance matrices are tuned to reject spurious mechanical slips during skid-steer rotations, ensuring a stable TF tree.</p>
         </article>
         <article class="info-card">
-          <h3>RTAB-Map Visual Odometry</h3>
-          <p>An RGB-D camera generates 3D visual odometry, providing a completely independent motion estimate to double-check the mechanical wheels.</p>
+          <h3>Nav2 & Costmaps</h3>
+          <p>Global and local costmaps generate layered occupancy grids from 2D LiDAR scans, inflating obstacles to ensure the robot maintains a safe physical radius during transit.</p>
+        </article>
+        <article class="info-card">
+          <h3>A* Global Planner</h3>
+          <p>A custom C++ `nav2_core::GlobalPlanner` plugin calculates the shortest mathematical route from the EKF pose to the goal, explicitly avoiding coordinates marked as lethal obstacles.</p>
         </article>
       </div>
     </section>

@@ -4,7 +4,7 @@
 ![C++](https://img.shields.io/badge/C++-17-blue)
 ![Gazebo](https://img.shields.io/badge/Gazebo-Harmonic-orange)
 
-FusionBot Core is a full-stack robotics architecture demonstrating custom C++ algorithm development, ROS 2 integration, and high-fidelity physics simulation.
+FusionBot Core is a full-stack, cloud-native Autonomous Mobile Robot (AMR) architecture. Originally engineered as a fault-tolerant backbone to solve skid-steer odometry drift using an Extended Kalman Filter (EKF), the architecture has been extended to support complex autonomous navigation. Built upon this stable sensor-fusion foundation, a custom grid-based A* pathfinding algorithm was integrated as a ROS 2 Nav2 plugin, enabling the robot to dynamically compute optimal global paths while safely avoiding obstacles.
 
 ## 🌟 Key Features
 - **Custom A* Global Planner:** A grid-based pathfinding algorithm built from scratch as a modern C++ `nav2_core::GlobalPlanner` plugin. Guarantees the shortest mathematical path avoiding `LETHAL_OBSTACLE` constraints.
